@@ -4,17 +4,17 @@ require 'test/unit'
 
 class StatusFromDumpstr
     # TODO:
-    # headerとtextを分割する(:で判断)
-    # textをスペースごとに分割する
-    # 分割したtextのリストを逆順に並べ替える
-    # textを結合する
-    # headerからtextの分割のフォーマットを選択する
+    # headerとbodyを分割する(:で判断)
+    # bodyをスペースごとに分割する
+    # 分割したbodyのリストを逆順に並べ替える
+    # bodyを結合する
+    # headerからbodyの分割のフォーマットを選択する
     # フォーマットに従って分割する
-    # 整形したtextをreturnする
+    # 整形したbodyをreturnする
     private
     
-    @@dumpformat = Struct.new(:header, :text)
-    @@textformat = Struct.new(:name,   :size_in_byte)
+    @@dumpformat = Struct.new(:header, :body)
+    @@bodyformat = Struct.new(:name,   :size_in_byte)
 
     module EventId
         NO1000  = 0.freeze
@@ -22,34 +22,34 @@ class StatusFromDumpstr
         OTHER   = 3.freeze
     end
 
-    TEXT_FORMAT = {
+    BODY_FORMAT = {
         EventId::NO1000 =>[
-            @@textformat.new("text1", 4),
-            @@textformat.new("text2", 2),
-            @@textformat.new("text3", 2),
-            @@textformat.new("text4", 4),
-            @@textformat.new("text5", 4),
+            @@bodyformat.new("body1", 4),
+            @@bodyformat.new("body2", 2),
+            @@bodyformat.new("body3", 2),
+            @@bodyformat.new("body4", 4),
+            @@bodyformat.new("body5", 4),
         ],
         EventId::NO1001 =>[
-            @@textformat.new("text1", 16)
+            @@bodyformat.new("body1", 16)
         ],
         EventId::OTHER  =>[],
     }
 
-    def split_header_and_text(dumpstr)
+    def split_header_and_body(dumpstr)
         if dumpstr.respond_to?("split")
-            header_and_text = dumpstr.split(":")
-            if header_and_text.size == 2
-                return @@dumpformat.new(header_and_text[0], header_and_text[1])
+            header_and_body = dumpstr.split(":")
+            if header_and_body.size == 2
+                return @@dumpformat.new(header_and_body[0], header_and_body[1])
             end
         end
         return @@dumpformat.new("", "")
     end
 
-    def split_text_by_space(text)
-        if text.respond_to?("split")
-            text_list = text.split(" ")
-            return text_list
+    def split_body_by_space(body)
+        if body.respond_to?("split")
+            body_list = body.split(" ")
+            return body_list
         end
         return []
     end
@@ -68,47 +68,47 @@ class StatusFromDumpstr
         return ""
     end
 
-    def select_text_format(header)
+    def select_body_format(header)
         case header
             in "header 1000"
-                return TEXT_FORMAT[EventId::NO1000]
+                return BODY_FORMAT[EventId::NO1000]
             in "header 1001"
-                return TEXT_FORMAT[EventId::NO1001]
+                return BODY_FORMAT[EventId::NO1001]
             in _
-                return TEXT_FORMAT[EventId::OTHER]
+                return BODY_FORMAT[EventId::OTHER]
         end
         #dummy
-        return TEXT_FORMAT[EventId::OTHER]
+        return BODY_FORMAT[EventId::OTHER]
     end
 
-    def parse_text(format:, str:)
+    def parse_body(format:, str:)
         if format.length == 0
             return ""
         elsif str.length < format.first.size_in_byte
             return "error"
         end
         
-        return "#{format.first.name}: #{str.slice(-format.first.size_in_byte..)}  #{parse_text(format: format.last(format.length - 1), str:str.slice(..(str.length - format.first.size_in_byte - 1)))}"
+        return "#{format.first.name}: #{str.slice(-format.first.size_in_byte..)}  #{parse_body(format: format.last(format.length - 1), str:str.slice(..(str.length - format.first.size_in_byte - 1)))}"
     end
 
     public
     def calculate_status(dumpstr)
-        dumpinfo    = split_header_and_text(dumpstr)
-        text_str    = strlist_to_str(reverse_list(split_text_by_space(dumpinfo.text)))
+        dumpinfo    = split_header_and_body(dumpstr)
+        body_str    = strlist_to_str(reverse_list(split_body_by_space(dumpinfo.body)))
         
         # for test
-        # puts text_str
+        # puts body_str
 
-        text_format  = select_text_format(dumpinfo.header)
-        return parse_text(format: text_format, str:text_str)
+        body_format  = select_body_format(dumpinfo.header)
+        return parse_body(format: body_format, str:body_str)
     end
 end
 
 class TestForStatusFromDumpstr < Test::Unit::TestCase
     def test_sfd
         sfd = StatusFromDumpstr.new
-        assert_equal sfd.calculate_status("header 1000:3210 7654 ba98 fedc"), "text1: 3210  text2: 54  text3: 76  text4: ba98  text5: fedc  "
-        assert_equal sfd.calculate_status("header 1001:3210 7654 ba98 fedc"), "text1: fedcba9876543210  "
+        assert_equal sfd.calculate_status("header 1000:3210 7654 ba98 fedc"), "body1: 3210  body2: 54  body3: 76  body4: ba98  body5: fedc  "
+        assert_equal sfd.calculate_status("header 1001:3210 7654 ba98 fedc"), "body1: fedcba9876543210  "
         assert_equal sfd.calculate_status("header hoge:3210 7654 ba98 fedc"), ""
     end
 end
