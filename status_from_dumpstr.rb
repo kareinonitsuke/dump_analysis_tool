@@ -91,9 +91,6 @@ class StatusFromDumpstr
     def calculate_status(dumpstr)
         dumpinfo    = split_header_and_body(dumpstr)
         body_str    = strlist_to_str(reverse_list(split_body_by_space(dumpinfo.body)))
-        
-        # for test
-        # puts body_str
 
         body_format  = select_body_format(dumpinfo.header)
         return parse_body(format: body_format, str:body_str)
