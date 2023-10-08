@@ -1,5 +1,7 @@
 # ダンプデータの整形ツール
 
+require 'test/unit'
+
 class StatusFromDumpstr
     # TODO:
     # headerとtextを分割する(:で判断)
@@ -102,10 +104,15 @@ class StatusFromDumpstr
     end
 end
 
+class TestForStatusFromDumpstr < Test::Unit::TestCase
+    def test_sfd
+        sfd = StatusFromDumpstr.new
+        assert_equal sfd.calculate_status("header 1000:3210 7654 ba98 fedc"), "text1: 3210  text2: 54  text3: 76  text4: ba98  text5: fedc  "
+        assert_equal sfd.calculate_status("header 1001:3210 7654 ba98 fedc"), "text1: fedcba9876543210  "
+        assert_equal sfd.calculate_status("header hoge:3210 7654 ba98 fedc"), ""
+    end
+end
 
 if __FILE__ == $0
-    sfd = StatusFromDumpstr.new
-    puts sfd.calculate_status("header 1000:3210 7654 ba98 fedc")
-    puts sfd.calculate_status("header 1001:3210 7654 ba98 fedc")
-    puts sfd.calculate_status("header hoge:3210 7654 ba98 fedc")
+    # hoge
 end
