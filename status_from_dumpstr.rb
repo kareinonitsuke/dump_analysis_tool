@@ -17,9 +17,9 @@ class StatusFromDumpstr
     @@bodyformat = Struct.new(:name,   :size_in_byte)
 
     module EventId
-        NO1000  = 0.freeze
-        NO1001  = 1.freeze
-        OTHER   = 3.freeze
+        NO1000  = "header 1000".freeze
+        NO1001  = "header 1001".freeze
+        OTHER   = "this is dummy text".freeze
     end
 
     BODY_FORMAT = {
@@ -69,15 +69,11 @@ class StatusFromDumpstr
     end
 
     def select_body_format(header)
-        case header
-            in "header 1000"
-                return BODY_FORMAT[EventId::NO1000]
-            in "header 1001"
-                return BODY_FORMAT[EventId::NO1001]
-            in _
-                return BODY_FORMAT[EventId::OTHER]
+        BODY_FORMAT.each do |key, value|
+            if header == key
+                return value
+            end
         end
-        #dummy
         return BODY_FORMAT[EventId::OTHER]
     end
 
