@@ -17,8 +17,8 @@ class StatusFromDumpstr
     @@bodyformat = Struct.new(:name,   :size_in_byte)
 
     module EventId
-        NO1000  = "header 1000".freeze
-        NO1001  = "header 1001".freeze
+        NO1000  = "1000".freeze
+        NO1001  = "1001".freeze
         OTHER   = "this is dummy text".freeze
     end
 
@@ -48,7 +48,7 @@ class StatusFromDumpstr
 
     def select_body_format(header)
         BODY_FORMAT.each do |key, value|
-            if header == key
+            if header.include?(key)
                 return value
             end
         end
