@@ -85,5 +85,9 @@ class TestForStatusFromDumpstr < Test::Unit::TestCase
 end
 
 if __FILE__ == $0
-    # hoge
+    puts "入力待ち…"
+    input = gets
+
+    sfd = StatusFromDumpstr.new
+    puts sfd.calculate_status(input)
 end
