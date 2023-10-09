@@ -46,28 +46,6 @@ class StatusFromDumpstr
         return @@dumpformat.new("", "")
     end
 
-    def split_body_by_space(body)
-        if body.respond_to?("split")
-            body_list = body.split(" ")
-            return body_list
-        end
-        return []
-    end
-
-    def reverse_list(list)
-        if list.respond_to?("reverse")
-            return list.reverse
-        end
-        return []
-    end
-
-    def strlist_to_str(list)
-        if list.respond_to?("join")
-            return list.join
-        end
-        return ""
-    end
-
     def select_body_format(header)
         BODY_FORMAT.each do |key, value|
             if header == key
@@ -82,15 +60,15 @@ class StatusFromDumpstr
             return ""
         elsif str.length < format.first.size_in_byte
             return "error"
+        else
+            return "#{format.first.name}: #{str.slice(-format.first.size_in_byte..)}  #{parse_body(format: format.last(format.length - 1), str:str.slice(..(str.length - format.first.size_in_byte - 1)))}"
         end
-        
-        return "#{format.first.name}: #{str.slice(-format.first.size_in_byte..)}  #{parse_body(format: format.last(format.length - 1), str:str.slice(..(str.length - format.first.size_in_byte - 1)))}"
     end
 
     public
     def calculate_status(dumpstr)
         dumpinfo    = split_header_and_body(dumpstr)
-        body_str    = strlist_to_str(reverse_list(split_body_by_space(dumpinfo.body)))
+        body_str    = dumpinfo.body.split(" ").reverse.join
 
         body_format  = select_body_format(dumpinfo.header)
         return parse_body(format: body_format, str:body_str)
